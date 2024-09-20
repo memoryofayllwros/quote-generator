@@ -84,12 +84,12 @@ if st.button("Generate Quote"):
     if sample_text:
         prompt_ExtractInfo = f"""
         
-        For text: {sample_text}, please execuate these steps and ONLY display the final extracted information as outlined below.
+        For text: {sample_text}, please follow these steps and ONLY display the final extracted information as outlined below.
 
         1. Split texts into separate itemized quotes.
         Split the following string into separate itemized quotes based on distinct job descriptions.
-        - This step is only for internal processing.
         - Do NOT output the itemized quotes or any intermediary results. 
+        - This step is only for internal processing.
 
         2. Extract information from each itemized quotes
         Extract the following information from the text and return it in the format: Area, Product/Service, QTY., Total Price.
@@ -97,14 +97,20 @@ if st.button("Generate Quote"):
         - If any piece of information (Area, Product No./Service, QTY., total price) is missing, indicate it as "N/A".
         - Ensure the area is one of the valid areas: {', '.join(valid_areas)}. If not, mark it as "Invalid Area".
 
-        3. The result should EXCLISUVELY contain the extracted information from Step 2 ONLY formatted as: 
+        3. The final output should exclusively contain the extracted information formatted as: 
         "Area: [area], Product No./Service: [product number], QTY.: [quantity], Total Price: [total price]".
         - List the results numerically.
-        - Do NOT include any additional text, explanations, or itemized quotes from Step 1 in the result.
+        - Do NOT include any additional text, explanations, or itemized quotes from Step 1.
 
         """
 
         extracted_info = extract_information(prompt_ExtractInfo)
+
+        # Additional check to remove any intermediary text (e.g., if model didn't follow prompt)
+        if "itemized" in extracted_info.lower() or "step" in extracted_info.lower():
+            extracted_info = "\n".join(
+                [line for line in extracted_info.splitlines() if not ("itemized" in line.lower() or "step" in line.lower())]
+            )
 
         # Validate the extracted areas
         validated_info = []
@@ -142,3 +148,5 @@ if st.button("Generate Quote"):
         
         with open(file_name, "rb") as file:
             st.download_button(label="Download PDF", data=file, file_name=file_name)
+
+
