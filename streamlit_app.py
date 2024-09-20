@@ -75,14 +75,17 @@ def generate_pdf(quote_info, file_name):
     pdf.output(file_name)
 
 # Streamlit UI
-st.title("Quote Generator")
-
-sample_text = st.text_area("Enter Your Quote Details, Please Include Area, Product No./Service, Quantity, Total Price.",
+def main():
+    st.set_page_config(page_title="Product Help Desk", page_icon=":page_facing_up:")
+    st.title("Quote Generator")
+    st.caption("An Estimate & Quote Generator Powered by OpenAI.")
+    
+    sample_text = st.text_area("Enter Your Quote Details, Please Include Area, Product No./Service, Quantity, Total Price.",
                            height=300)
-
-if st.button("Generate Quote"):
-    if sample_text:
-        prompt_ExtractInfo = f"""
+                           
+    if st.button("Generate Quote"):
+        if sample_text:
+            prompt_ExtractInfo = f"""
         
         For text: {sample_text}, please follow these steps and ONLY display the final extracted information as outlined below.
 
@@ -104,49 +107,50 @@ if st.button("Generate Quote"):
 
         """
 
-        extracted_info = extract_information(prompt_ExtractInfo)
+            extracted_info = extract_information(prompt_ExtractInfo)
 
-        # Additional check to remove any intermediary text (e.g., if model didn't follow prompt)
-        if "itemized" in extracted_info.lower() or "step" in extracted_info.lower():
-            extracted_info = "\n".join(
-                [line for line in extracted_info.splitlines() if not ("itemized" in line.lower() or "step" in line.lower())]
-            )
+            # Additional check to remove any intermediary text (e.g., if model didn't follow prompt)
+            if "itemized" in extracted_info.lower() or "step" in extracted_info.lower():
+                extracted_info = "\n".join(
+                    [line for line in extracted_info.splitlines() if not ("itemized" in line.lower() or "step" in line.lower())]
+                    )
 
-        # Validate the extracted areas
-        validated_info = []
-        for line in extracted_info.split('\n'):
-            if "Area:" in line:
-                try:
-                    # Safely extract and validate the area
-                    area_part = line.split('Area:')[1].split(',')[0].strip()
-                    valid_area = validate_area(area_part)
-                    # Replace the area part with the validated one
-                    line = line.replace(area_part, valid_area)
-                except IndexError:
-                    line = "Invalid Format: Missing Area Information"
+            # Validate the extracted areas
+            validated_info = []
+            for line in extracted_info.split('\n'):
+                if "Area:" in line:
+                    try:
+                        # Safely extract and validate the area
+                        area_part = line.split('Area:')[1].split(',')[0].strip()
+                        valid_area = validate_area(area_part)
+                        # Replace the area part with the validated one
+                        line = line.replace(area_part, valid_area)
+                    except IndexError:
+                        line = "Invalid Format: Missing Area Information"
             
-            validated_info.append(line)
+                validated_info.append(line)
 
-        validated_info_str = "\n".join(validated_info)
+            validated_info_str = "\n".join(validated_info)
 
-        # Display the validated information
-        def calculate_height(validated_info_str):
-            chars_per_line = 80
-            total_chars = len(validated_info_str)
-            line_count = (total_chars // chars_per_line) + validated_info_str.count('\n') + 1
-            height = min(400, max(100, line_count *25))
-            return height
+            # Display the validated information
+            def calculate_height(validated_info_str):
+                chars_per_line = 80
+                total_chars = len(validated_info_str)
+                line_count = (total_chars // chars_per_line) + validated_info_str.count('\n') + 1
+                height = min(400, max(100, line_count *25))
+                return height
         
-        st.text_area("Itemized Quote(s)", 
-                     validated_info_str, 
-                     height=calculate_height(validated_info_str)
-                     )
+            st.text_area("Itemized Quote(s)", 
+                         validated_info_str, 
+                         height=calculate_height(validated_info_str)
+                         )
 
-        file_name = "quote.pdf"
+            file_name = "quote.pdf"
 
-        generate_pdf(validated_info_str, file_name)
+            generate_pdf(validated_info_str, file_name)
         
-        with open(file_name, "rb") as file:
-            st.download_button(label="Download PDF", data=file, file_name=file_name)
+            with open(file_name, "rb") as file:
+                st.download_button(label="Download PDF", data=file, file_name=file_name)
 
-
+if __name__ == '__main__':
+    main()
