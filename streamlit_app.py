@@ -22,7 +22,7 @@ valid_areas = ['kitchen wall', 'kitchen floor', 'kitchen sink', 'kitchen',
                'full house floor', 'full house', 
                'living room', 'entrance']
 
-#validate areas
+# Validate areas
 def validate_area(area):
     if area.lower() in valid_areas:
         return area
