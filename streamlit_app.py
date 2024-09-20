@@ -84,12 +84,12 @@ if st.button("Generate Quote"):
     if sample_text:
         prompt_ExtractInfo = f"""
         
-        For text: {sample_text}, please follow these steps and ONLY display the final extracted information as outlined below.
+        For text: {sample_text}, please execuate these steps and ONLY display the final extracted information as outlined below.
 
         1. Split texts into separate itemized quotes.
         Split the following string into separate itemized quotes based on distinct job descriptions.
-        - Do NOT output the itemized quotes or any intermediary results. 
         - This step is only for internal processing.
+        - Do NOT output the itemized quotes or any intermediary results. 
 
         2. Extract information from each itemized quotes
         Extract the following information from the text and return it in the format: Area, Product/Service, QTY., Total Price.
@@ -97,10 +97,10 @@ if st.button("Generate Quote"):
         - If any piece of information (Area, Product No./Service, QTY., total price) is missing, indicate it as "N/A".
         - Ensure the area is one of the valid areas: {', '.join(valid_areas)}. If not, mark it as "Invalid Area".
 
-        3. The final output should exclusively contain the extracted information formatted as: 
+        3. The result should EXCLISUVELY contain the extracted information from Step 2 ONLY formatted as: 
         "Area: [area], Product No./Service: [product number], QTY.: [quantity], Total Price: [total price]".
         - List the results numerically.
-        - Do NOT include any additional text, explanations, or itemized quotes from Step 1.
+        - Do NOT include any additional text, explanations, or itemized quotes from Step 1 in the result.
 
         """
 
