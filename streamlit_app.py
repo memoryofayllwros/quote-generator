@@ -29,7 +29,6 @@ def validate_area(area):
     else:
         return "Invalid Area"
 
-
 # PDF generation function
 def generate_pdf(quote_info, file_name):
     pdf = FPDF()
@@ -76,11 +75,11 @@ def generate_pdf(quote_info, file_name):
 
 # Streamlit UI
 def main():
-    st.set_page_config(page_title="Product Help Desk", page_icon=":page_facing_up:")
+    st.set_page_config(page_title="Quote Generator", page_icon=":page_facing_up:")
     st.title("Quote Generator")
     st.caption("An Estimate & Quote Generator Powered by OpenAI.")
     
-    sample_text = st.text_area("Enter Your Quote Details, Please Include Area, Product No./Service, Quantity, Total Price.",
+    sample_text = st.text_area("Enter Your Quote Details, Please Include Area, Product No./Service, Quantity, Unit Price.",
                            height=300)
                            
     if st.button("Generate Quote"):
