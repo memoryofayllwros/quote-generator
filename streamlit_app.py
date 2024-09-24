@@ -6,16 +6,6 @@ from fpdf import FPDF
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-# LLM function
-def extract_information(prompt_ExtractInfo):
-    llm = OpenAI(
-        model_name="gpt-3.5-turbo-instruct",
-        temperature=0,
-        max_tokens=500
-    )
-    response = llm.generate([prompt_ExtractInfo])
-    return response.generations[0][0].text.strip()
-
 
 # Predefined products and their unit prices
 product_prices = {
@@ -39,7 +29,7 @@ def validate_area(area):
         return "Invalid Area"
 
 
-# PDF generation function
+# ----------------------PDF generation function----------------------
 def generate_pdf(quote_info, file_name):
     pdf = FPDF()
     pdf.add_page()
@@ -95,8 +85,8 @@ def generate_pdf(quote_info, file_name):
             
         except IndexError:
             area, product_service, qty = "N/A", "N/A", 0
-        
-        
+
+    
         # Validate area before adding to PDF
         area = validate_area(area)
 
@@ -125,7 +115,17 @@ def generate_pdf(quote_info, file_name):
     pdf.output(file_name)
 
 
-# Streamlit UI
+# ----------------------LLM function----------------------
+def extract_information(prompt_ExtractInfo):
+    llm = OpenAI(
+        model_name="gpt-3.5-turbo-instruct",
+        temperature=0,
+        max_tokens=500
+    )
+    response = llm.generate([prompt_ExtractInfo])
+    return response.generations[0][0].text.strip()
+
+# ----------------------Streamlit UI----------------------
 def main():
     st.set_page_config(page_title="Quote Generator", page_icon=":page_facing_up:")
     st.title("Quote Generator")
