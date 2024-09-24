@@ -44,14 +44,14 @@ def generate_pdf(quote_info, file_name):
     pdf = FPDF()
     pdf.add_page()
 
-    # Set title and header
-    pdf.set_font("Arial", style='B', size=16)
+    # Set title and header with improved formatting
+    pdf.set_font("Arial", style='B', size=20)
     pdf.cell(200, 10, txt="Quote Summary", ln=True, align="C")
     pdf.ln(10)
 
     # Add company or contact information
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, "Company Name: Jibpool Corp.", ln=True, align="C")
+    pdf.cell(200, 10, "Company Name: Example Corp.", ln=True, align="C")
     pdf.cell(200, 10, "Address: 123 Example St., City, Country", ln=True, align="C")
     pdf.cell(200, 10, "Contact: +123 456 789", ln=True, align="C")
     pdf.ln(10)
@@ -71,11 +71,10 @@ def generate_pdf(quote_info, file_name):
     pdf.cell(30, 10, "Total Price", 1, 1, 'C', fill=True)
     pdf.ln(5)
 
-
     # Set content font
     pdf.set_font("Arial", size=12)
 
-    # Loop through each quote line and add to table
+    # Loop through each quote line and add to table with improved formatting
     for line in quote_info.split('\n'):
         parts = line.split(', ')
 
@@ -86,13 +85,21 @@ def generate_pdf(quote_info, file_name):
         try:
             area = parts[0].split(': ')[1] if len(parts) > 0 and ': ' in parts[0] else "N/A"
             product_service = parts[1].split(': ')[1] if len(parts) > 1 and ': ' in parts[1] else "N/A"
-            qty = float(parts[2].split(': ')[1]) if len(parts) > 2 and ': ' in parts[2] else 0
+            qty_str = parts[2].split(': ')[1] if len(parts) > 2 and ': ' in parts[2] else "N/A"
+
+            # Ensure the quantity is numeric and handle invalid quantities
+            try:
+                qty = float(qty_str)
+            except ValueError:
+                qty = 0  # Default to 0 if quantity is invalid or "N/A"
+            
         except IndexError:
             area, product_service, qty = "N/A", "N/A", 0
         
         # Validate area before adding to PDF
         area = validate_area(area)
 
+        # Retrieve unit price from predefined dictionary, or set to "N/A" if not found
         unit_price = product_prices.get(product_service, "N/A")
 
         total_price = "N/A"
@@ -101,10 +108,10 @@ def generate_pdf(quote_info, file_name):
 
         # Add each row to the PDF with right-aligned numeric columns
         pdf.cell(40, 10, area, 1, 0, 'C')
-        pdf.cell(60, 10, product_service, 1, 0, 'L')
-        pdf.cell(20, 10, str(qty), 1, 0, 'R')
-        pdf.cell(30, 10, str(unit_price), 1, 0, 'R')
-        pdf.cell(30, 10, str(total_price), 1, 1, 'R')
+        pdf.cell(60, 10, product_service, 1, 0, 'L')  # Left-align the service/product column
+        pdf.cell(20, 10, str(qty), 1, 0, 'R')  # Right-align for quantity
+        pdf.cell(30, 10, str(unit_price), 1, 0, 'R')  # Right-align for unit price
+        pdf.cell(30, 10, str(total_price), 1, 1, 'R')  # Right-align for total price
         pdf.ln(5)
 
     # Footer (Optional)
@@ -112,7 +119,6 @@ def generate_pdf(quote_info, file_name):
     pdf.set_font("Arial", 'I', 10)
     pdf.cell(0, 10, 'Thank you for your business!', 0, 0, 'C')
     pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'R')  # Add page numbers
-
 
     # Output PDF
     pdf.output(file_name)
@@ -140,12 +146,12 @@ def main():
 
         2. Extract information from each itemized quotes
         Extract the following information from the text and return it in the format: Area, Product/Service, QTY., Total Price.
-        - Ensure each entry is in the format: "Area: [area], Product No./Service: [product number|service name], QTY.: [quantity], Total Price: [total price]."
-        - If any piece of information (Area, Product No./Service, QTY., total price) is missing, indicate it as "N/A".
+        - Ensure each entry is in the format: "Area: [area], Product No./Service: [product number|service name], QTY.: [quantity], Unit Price:[unit price], Total Price: [total price]."
+        - If any piece of information (Area, Product No./Service, QTY., unit price, total price) is missing, indicate it as "N/A".
         - Ensure the area is one of the valid areas: {', '.join(valid_areas)}. If not, mark it as "Invalid Area".
 
         3. The final output should exclusively contain the extracted information formatted as: 
-        "Area: [area], Product No./Service: [product number], QTY.: [quantity], Total Price: [total price]".
+        "Area: [area], Product No./Service: [product number], QTY.: [quantity], Unit Price:[unit price], Total Price: [total price]".
         - List the results numerically.
         - Do NOT include any additional text, explanations, or itemized quotes from Step 1.
 
