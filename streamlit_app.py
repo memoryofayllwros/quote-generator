@@ -85,10 +85,17 @@ def generate_pdf(quote_info, file_name):
         try:
             area = parts[0].split(': ')[1] if len(parts) > 0 and ': ' in parts[0] else "N/A"
             product_service = parts[1].split(': ')[1] if len(parts) > 1 and ': ' in parts[1] else "N/A"
-            qty = float(parts[2].split(': ')[1]) if len(parts) > 2 and ': ' in parts[2] else 0
+            qty_str = parts[2].split(': ')[1] if len(parts) > 2 and ': ' in parts[2] else "N/A"
+
+            # Ensure the quantity is numeric and handle invalid quantities
+            try:
+                qty = float(qty_str)
+            except ValueError:
+                qty = 0  # Default to 0 if quantity is invalid or "N/A"
+            
         except IndexError:
             area, product_service, qty = "N/A", "N/A", 0
-            
+        
         
         # Validate area before adding to PDF
         area = validate_area(area)
