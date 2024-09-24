@@ -16,18 +16,28 @@ def extract_information(prompt_ExtractInfo):
     response = llm.generate([prompt_ExtractInfo])
     return response.generations[0][0].text.strip()
 
+
+# Predefined products and their unit prices
+product_prices = {
+    'SIEMENS IMA1608': 50.00,
+    'Whirlpool SCEBM0401MT': 60.00,
+    'SCEBM0401MT': 55.00,
+    'TMCDH0904': 45.00,
+    'SIEMENS LU83S750HK': 4000.00,
+}
+
 # Define valid areas
 valid_areas = ['kitchen wall', 'kitchen floor', 'kitchen sink', 'kitchen',
                'bathroom wall', 'bathroom floor', 'bathroom counter top', 'bathroom',
                'full house floor', 'full house', 
                'living room', 'entrance']
 
-# Validate areas
 def validate_area(area):
     if area.lower() in valid_areas:
         return area
     else:
         return "Invalid Area"
+
 
 # PDF generation function
 def generate_pdf(quote_info, file_name):
@@ -39,13 +49,28 @@ def generate_pdf(quote_info, file_name):
     pdf.cell(200, 10, txt="Quote Summary", ln=True, align="C")
     pdf.ln(10)
 
-    # Set table headers
+    # Add company or contact information
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, "Company Name: Jibpool Corp.", ln=True, align="C")
+    pdf.cell(200, 10, "Address: 123 Example St., City, Country", ln=True, align="C")
+    pdf.cell(200, 10, "Contact: +123 456 789", ln=True, align="C")
+    pdf.ln(10)
+
+    # Add date or reference number
+    pdf.cell(100, 10, "Date: 23-Sep-2024", ln=True)
+    pdf.cell(100, 10, "Reference No: HQ240949FTS-00", ln=True)
+    pdf.ln(10)
+
+    # Set table headers with background color
+    pdf.set_fill_color(200, 200, 200)  # Light gray background for headers
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(40, 10, "Area", 1, 0, 'C')
-    pdf.cell(60, 10, "Product No./Service", 1, 0, 'C')
-    pdf.cell(20, 10, "QTY.", 1, 0, 'C')
-    pdf.cell(30, 10, "Total Price", 1, 1, 'C')
+    pdf.cell(40, 10, "Area", 1, 0, 'C', fill=True)
+    pdf.cell(60, 10, "Product No./Service", 1, 0, 'C', fill=True)
+    pdf.cell(20, 10, "QTY", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Unit Price", 1, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Total Price", 1, 1, 'C', fill=True)
     pdf.ln(5)
+
 
     # Set content font
     pdf.set_font("Arial", size=12)
@@ -54,24 +79,44 @@ def generate_pdf(quote_info, file_name):
     for line in quote_info.split('\n'):
         parts = line.split(', ')
 
-        # Check if there are enough parts for each field (Area, Product No./Service, QTY, Total Price)
-        area = parts[0].split(': ')[1] if len(parts) > 0 and ': ' in parts[0] else "N/A"
-        product_service = parts[1].split(': ')[1] if len(parts) > 1 and ': ' in parts[1] else "N/A"
-        qty = parts[2].split(': ')[1] if len(parts) > 2 and ': ' in parts[2] else "N/A"
-        total_price = parts[3].split(': ')[1] if len(parts) > 3 and ': ' in parts[3] else "N/A"
+        # Ensure there are enough parts in the line (handle missing data)
+        if len(parts) < 4:
+            continue
 
+        try:
+            area = parts[0].split(': ')[1] if len(parts) > 0 and ': ' in parts[0] else "N/A"
+            product_service = parts[1].split(': ')[1] if len(parts) > 1 and ': ' in parts[1] else "N/A"
+            qty = float(parts[2].split(': ')[1]) if len(parts) > 2 and ': ' in parts[2] else 0
+        except IndexError:
+            area, product_service, qty = "N/A", "N/A", 0
+        
         # Validate area before adding to PDF
         area = validate_area(area)
 
-        # Add each row to PDF
+        unit_price = product_prices.get(product_service, "N/A")
+
+        total_price = "N/A"
+        if unit_price != "N/A" and qty > 0:
+            total_price = "{:.2f}".format(qty * unit_price)
+
+        # Add each row to the PDF with right-aligned numeric columns
         pdf.cell(40, 10, area, 1, 0, 'C')
-        pdf.cell(60, 10, product_service, 1, 0, 'C')
-        pdf.cell(20, 10, qty, 1, 0, 'C')
-        pdf.cell(30, 10, total_price, 1, 1, 'C')
+        pdf.cell(60, 10, product_service, 1, 0, 'L')
+        pdf.cell(20, 10, str(qty), 1, 0, 'R')
+        pdf.cell(30, 10, str(unit_price), 1, 0, 'R')
+        pdf.cell(30, 10, str(total_price), 1, 1, 'R')
         pdf.ln(5)
+
+    # Footer (Optional)
+    pdf.set_y(-30)  # Position at 30 mm from bottom
+    pdf.set_font("Arial", 'I', 10)
+    pdf.cell(0, 10, 'Thank you for your business!', 0, 0, 'C')
+    pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'R')  # Add page numbers
+
 
     # Output PDF
     pdf.output(file_name)
+
 
 # Streamlit UI
 def main():
@@ -105,7 +150,7 @@ def main():
         - Do NOT include any additional text, explanations, or itemized quotes from Step 1.
 
         """
-
+            
             extracted_info = extract_information(prompt_ExtractInfo)
 
             # Additional check to remove any intermediary text (e.g., if model didn't follow prompt)
