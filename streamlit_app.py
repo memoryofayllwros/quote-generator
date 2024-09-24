@@ -11,7 +11,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 product_prices = {
     'SIEMENS IMA1608': 50.00,
     'Whirlpool SCEBM0401MT': 60.00,
-    'SCEBM0401MT': 55.00,
+    'SCEBM0402MT': 55.00,
     'TMCDH0904': 45.00,
     'SIEMENS LU83S750HK': 4000.00,
 }
