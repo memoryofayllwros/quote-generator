@@ -54,11 +54,11 @@ def generate_pdf(quote_info, file_name):
     # Set table headers with background color
     pdf.set_fill_color(200, 200, 200)  # Light gray background for headers
     pdf.set_font("Arial", style='B', size=12)
-    pdf.cell(40, 10, "Area", 1, 0, 'C', fill=True)
-    pdf.cell(60, 10, "Product No./Service", 1, 0, 'C', fill=True)
-    pdf.cell(20, 10, "QTY", 1, 0, 'C', fill=True)
-    pdf.cell(30, 10, "Unit Price", 1, 0, 'C', fill=True)
-    pdf.cell(30, 10, "Total Price", 1, 1, 'C', fill=True)
+    pdf.cell(40, 10, "Area", 0, 0, 'C', fill=True)
+    pdf.cell(60, 10, "Product No./Service", 0, 0, 'C', fill=True)
+    pdf.cell(20, 10, "QTY", 0, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Unit Price", 0, 0, 'C', fill=True)
+    pdf.cell(30, 10, "Total Price", 0, 1, 'C', fill=True)
 
     # Set content font
     pdf.set_font("Arial", size=12)
@@ -96,11 +96,11 @@ def generate_pdf(quote_info, file_name):
             total_price = "{:.2f}".format(qty * unit_price)
 
         # Add each row to the PDF with right-aligned numeric columns
-        pdf.cell(40, 10, area, 1, 0, 'C')
-        pdf.cell(60, 10, product_service, 1, 0, 'L')  # Left-align the service/product column
-        pdf.cell(20, 10, str(qty), 1, 0, 'R')  # Right-align for quantity
-        pdf.cell(30, 10, str(unit_price), 1, 0, 'R')  # Right-align for unit price
-        pdf.cell(30, 10, str(total_price), 1, 1, 'R')  # Right-align for total price
+        pdf.cell(40, 10, area, 0, 0, 'C')
+        pdf.cell(60, 10, product_service, 0, 0, 'L')  # Left-align the service/product column
+        pdf.cell(20, 10, str(qty), 0, 0, 'R')  # Right-align for quantity
+        pdf.cell(30, 10, str(unit_price), 0, 0, 'R')  # Right-align for unit price
+        pdf.cell(30, 10, str(total_price), 0, 1, 'R')  # Right-align for total price
 
     # Footer (Optional)
     pdf.set_y(-30)  # Position at 30 mm from bottom
