@@ -59,7 +59,6 @@ def generate_pdf(quote_info, file_name):
     pdf.cell(20, 10, "QTY", 1, 0, 'C', fill=True)
     pdf.cell(30, 10, "Unit Price", 1, 0, 'C', fill=True)
     pdf.cell(30, 10, "Total Price", 1, 1, 'C', fill=True)
-    pdf.ln(5)
 
     # Set content font
     pdf.set_font("Arial", size=12)
@@ -102,7 +101,6 @@ def generate_pdf(quote_info, file_name):
         pdf.cell(20, 10, str(qty), 1, 0, 'R')  # Right-align for quantity
         pdf.cell(30, 10, str(unit_price), 1, 0, 'R')  # Right-align for unit price
         pdf.cell(30, 10, str(total_price), 1, 1, 'R')  # Right-align for total price
-        pdf.ln(5)
 
     # Footer (Optional)
     pdf.set_y(-30)  # Position at 30 mm from bottom
