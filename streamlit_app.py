@@ -103,9 +103,9 @@ def generate_pdf(quote_info, file_name):
     pdf.add_page()
 
     # Set table headers
-    pdf.set_font('Arial', size=10)
+    pdf.set_font('Arial', size=9)
     pdf.set_xy(10, 94)
-    pdf.cell(190, 6, "kitchen and bathroom tiling & range hood", ln=True, align='L')
+    pdf.cell(190, 6, "[project description]", ln=True, align='L')
 
     pdf.set_xy(5, 104)
     pdf.set_font("Arial", style='BU', size=12)
