@@ -32,7 +32,7 @@ ref_no = generate_ref_no()
 class CustomPDF(FPDF):
     def header(self):
         self.set_xy(158, 8)
-        self.image('/Users/jingwang/Desktop/virpluz_logo.jpg', h=15)
+        self.image('virpluz_logo.jpg', h=15)
 
         self.set_xy(10, 18)
         self.set_font("Arial", style='B', size=20)
