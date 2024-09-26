@@ -1,5 +1,8 @@
 from fpdf import FPDF
 
+w = 210
+h = 297
+
 product_details = {
     'SIEMENS IMA1608': 50.00,
     'Whirlpool SCEBM0401MT': 60.00,
@@ -8,10 +11,28 @@ product_details = {
     'SIEMENS LU83S750HK': 4000.00,
 }
 
+from datetime import datetime
+today_date = datetime.now().strftime("%d %B %Y")
+
+import random
+import string
+# Function to generate a random Ref. No.
+def generate_ref_no():
+
+    today_date_numerical = datetime.now().strftime("%Y%m%d")
+    last_six_digits = today_date_numerical[2:]
+    random_part = ''.join(random.choices(string.digits, k=2))
+    ref_no = f"VIR-Q{last_six_digits}-{random_part}"
+    
+    return ref_no
+
+ref_no = generate_ref_no()
+
+
 class CustomPDF(FPDF):
     def header(self):
         self.set_xy(158, 8)
-        self.image('virpluz_logo.jpg', h=15)
+        self.image('/Users/jingwang/Desktop/virpluz_logo.jpg', h=15)
 
         self.set_xy(10, 18)
         self.set_font("Arial", style='B', size=20)
@@ -46,11 +67,12 @@ class CustomPDF(FPDF):
         self.set_font('Arial', size=12)
         self.set_xy(-85, 46)
         self.cell(30, 6, txt="Ref. No: ", ln=0, align="R")
-        self.cell(50, 6, txt="HQ240949FTS-00", ln=1, align="L")
+        self.cell(50, 6, txt=ref_no, ln=1, align="L")
+
 
         self.set_xy(-85, 52)
         self.cell(30, 6, txt="Date: ", ln=0, align="R")
-        self.cell(50, 6, txt="25 Sep 2024", ln=1, align="L")
+        self.cell(50, 6, txt=today_date, ln=1, align="L")
 
         self.set_xy(-85, 58)
         self.cell(30, 6, txt="Salesman: ", ln=0, align="R")
@@ -71,11 +93,10 @@ class CustomPDF(FPDF):
     def footer(self):
         self.set_y(-15)
         self.set_font("Arial", size=11)
-        
-        ref_number = "HQ240949FTS-00"
+
         page_number = "Page " + str(self.page_no())
 
-        self.cell(0, 10, f"{ref_number} | {page_number}", align='R')
+        self.cell(0, 10, f"{ref_no} | {page_number}", align='R')
         
 # PDF generation function with integrated table and custom header/footer
 def generate_pdf(quote_info, file_name):
