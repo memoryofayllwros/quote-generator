@@ -3,7 +3,6 @@ import streamlit as st
 from langchain_openai import OpenAI
 from pdf_format import generate_pdf
 
-
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -16,8 +15,6 @@ def extract_information(prompt_ExtractInfo):
     )
     response = llm.generate([prompt_ExtractInfo])
     return response.generations[0][0].text.strip()
-
-
 
 # Streamlit UI
 def main():

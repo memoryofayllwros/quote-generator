@@ -69,10 +69,9 @@ class CustomPDF(FPDF):
         self.cell(50, 6, txt="jess@virpluz.io", ln=1, align="L")
 
     def footer(self):
-        self.set_y(-15)  # Set position from the bottom of the page
+        self.set_y(-15)
         self.set_font("Arial", size=11)
         
-        # Combine the reference number and page number, separated by a pipe or dash
         ref_number = "HQ240949FTS-00"
         page_number = "Page " + str(self.page_no())
 
@@ -83,7 +82,6 @@ def generate_pdf(quote_info, file_name):
     pdf = CustomPDF()
     pdf.add_page()
 
-    # Set table headers
     pdf.set_font('Arial', size=9)
     pdf.set_xy(10, 94)
     pdf.cell(190, 6, "[project description]", ln=True, align='L')
@@ -98,7 +96,6 @@ def generate_pdf(quote_info, file_name):
     pdf.cell(25, 7, "Amount HKD", align='C')
     pdf.ln(10)
 
-    # Set content font for table rows
     pdf.set_font("Arial", size=11)
 
     grand_total = 0.0
@@ -126,7 +123,7 @@ def generate_pdf(quote_info, file_name):
         total_price = "N/A"
         if unit_price != "N/A" and qty > 0:
             total_price = qty * unit_price
-            grand_total += total_price  # Add to grand total
+            grand_total += total_price
             total_price = "{:.2f}".format(qty * unit_price)
 
         # Add each row to the PDF with right-aligned numeric columns
@@ -139,17 +136,15 @@ def generate_pdf(quote_info, file_name):
         pdf.cell(25, 10, str(total_price), 0, 1, 'R')
 
     # After the loop, print the total amount
-    pdf.ln(5)  # Add space before total
+    pdf.ln(5)
     pdf.set_font("Arial", style='B', size=12)
     pdf.cell(170, 10, "Total Amount (HKD):", align='R')
     pdf.cell(21, 10, "{:.2f}".format(grand_total), align='R')
     
-
-    # Add a new page with terms and conditions
+    # Terms and conditions
     pdf.add_page()
     pdf.set_font("Arial", style='B', size=16)
     pdf.set_xy(10, 95)
     pdf.cell(20, 10, "Terms & Conditions", align='L')
 
-    # Output the PDF
     pdf.output(file_name)
