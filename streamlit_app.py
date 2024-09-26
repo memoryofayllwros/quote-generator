@@ -25,7 +25,7 @@ def main():
     st.title("Quote Generator")
     st.caption("An Estimate & Quote Generator Powered by OpenAI.")
     
-    sample_text = st.text_area("Enter Your Quote Details, Please Include Area, Product No./Service & Quantity.",
+    sample_text = st.text_area("Enter Your Quote Details, Please Specifically Include Product No./Service & Quantity.",
                            height=300)
                            
     if st.button("Generate Quote"):
