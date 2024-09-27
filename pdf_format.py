@@ -28,10 +28,9 @@ def generate_ref_no():
 
 ref_no = generate_ref_no()
 
-
 class CustomPDF(FPDF):
     def header(self):
-        self.set_xy(158, 8)
+        self.set_xy(158, 10)
         self.image('virpluz_logo.jpg', h=15)
 
         self.set_xy(10, 18)
