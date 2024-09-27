@@ -14,16 +14,18 @@ product_details = {
 from datetime import datetime
 today_date = datetime.now().strftime("%d %B %Y")
 
-import random
-import string
-# Function to generate a random Ref. No.
-def generate_ref_no():
 
+ref_counter = 0
+
+def generate_ref_no():
+    global ref_counter
     today_date_numerical = datetime.now().strftime("%Y%m%d")
     last_six_digits = today_date_numerical[2:]
-    random_part = ''.join(random.choices(string.digits, k=2))
-    ref_no = f"VIR-Q{last_six_digits}-{random_part}"
-    
+    count_part = f"{ref_counter:02d}"
+
+    ref_no = f"VIR-Q{last_six_digits}-{count_part}"
+    ref_counter += 1
+
     return ref_no
 
 ref_no = generate_ref_no()
