@@ -1,4 +1,5 @@
 .streamlit/secrets.toml
+/backup_code.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
