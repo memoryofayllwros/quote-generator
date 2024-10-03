@@ -145,6 +145,7 @@ import os
 import streamlit as st
 from langchain_openai import OpenAI
 from pdf_format import generate_pdf
+from langchain.prompts import PromptTemplate
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
