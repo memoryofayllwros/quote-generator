@@ -14,7 +14,7 @@ product_details = {
         'unit_price': 55.00,
         'size': '0402 mm',
         'color': 'Black'
-    },status
+    },
     
     'TMCDH0904': {
         'unit_price': 45.00,
