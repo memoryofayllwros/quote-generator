@@ -232,13 +232,15 @@ w = 210
 h = 297
 
 from datetime import datetime
-today_date = datetime.now().strftime("%d %B %Y")
+import pytz
+hk_timezone = pytz.timezone('Asia/Hong_Kong')
+today_date = datetime.now(hk_timezone).strftime("%d %B %Y")
 
 ref_counter = 0
 
 def generate_ref_no():
     global ref_counter
-    today_date_numerical = datetime.now().strftime("%Y%m%d")
+    today_date_numerical = datetime.now(hk_timezone).strftime("%Y%m%d")
     last_six_digits = today_date_numerical[2:]
     count_part = f"{ref_counter:02d}"
 
@@ -503,15 +505,15 @@ def main():
                     **Reminder:** 
                     Would you like to include additional materials, such as cements, in your quotation?
                 """)
-                if st.button("Yes, add additional materials"):
+                if st.button("Yes, I need additional materials"):
                     st.write("Additional materials will be included in the quotation.")
-                elif st.button("No, proceed without"):
+                elif st.button("No, Proceed"):
                     st.write("Proceeding without additional materials.")
 
 
     # Ensure contexts and terms are available for download and preview
     if 'quotation_items' in st.session_state and 'quotation_terms' in st.session_state:
-        st.subheader("Quotation Info Check:")
+        st.subheader("Quotation Info Check")
         st.write(f"This quotation is generated for {project_name} from {sales_name}.")
             
         if not project_name or not sales_name:
@@ -526,7 +528,7 @@ def main():
             generate_pdf(quotation_items_editable, quotation_terms_editable, pdf_buffer, project_name, sales_name)
 
             # Display the PDF preview
-            st.subheader("PDF Preview:")
+            st.subheader("PDF Preview")
             pdf_buffer.seek(0)  # Move to the start of the BytesIO buffer
             pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode('utf-8')
 
