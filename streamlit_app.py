@@ -426,21 +426,29 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
     pdf.set_font("Arial", style='B', size=12)
     pdf.cell(170, 10, "Total Amount (HKD):", align='R')
     pdf.cell(21, 10, "{:.2f}".format(grand_total), align='R')
-    
-    # Terms and conditions
-    pdf.add_page()
-    pdf.set_font("Arial", style='B', size=16)
-    pdf.set_xy(10, 95)
-    pdf.cell(20, 10, "Terms & Conditions", align='L')
-    pdf.set_font("Arial", size=12)
+    pdf.ln(10)
 
+# Terms and conditions title
+    pdf.set_font("Arial", style='B', size=16)
+    if pdf.get_y() > 260:
+        pdf.set_xy(10, 95)
+
+    pdf.cell(0, 10, "Terms & Conditions", align='L', ln=True)
+    pdf.ln(5)
+
+# Terms & Conditions Content
+    pdf.set_font("Arial", size=12)
     terms_lines = quotation_terms.split("\n")
+
     for term in terms_lines:
+        if pdf.get_y() > 260:
+                pdf.add_page()
+                pdf.set_xy(10, 97)
+
         pdf.multi_cell(0, 5, term)
         pdf.ln(2)
 
     pdf_output.write(pdf.output(dest='S').encode('latin1'))
-
 
 # ----------Streamlit UI----------
 import io
