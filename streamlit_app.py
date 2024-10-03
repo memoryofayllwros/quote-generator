@@ -404,7 +404,6 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
         if not description or not product_service or qty == 0:
             continue
 
-    # Retrieve unit price from predefined dictionary, or skip if not foun
         product_info = product_details.get(product_service)
         if product_info is None:
             continue
@@ -414,8 +413,6 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
         grand_total += total_price
         total_price = "{:.2f}".format(qty * unit_price)
 
-
-        # Add each row to the PDF with right-aligned numeric columns
         pdf.set_x(5)
         pdf.cell(15, 10, str(i), 0, 0, 'C')
         pdf.cell(65, 10, description, 0, 0, 'L')
@@ -435,15 +432,12 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
     pdf.set_font("Arial", style='B', size=16)
     pdf.set_xy(10, 95)
     pdf.cell(20, 10, "Terms & Conditions", align='L')
-
-    # Terms & Conditions Content
     pdf.set_font("Arial", size=12)
-    terms_lines = quotation_terms.split("\n")
 
-    # Add each term to the PDF
+    terms_lines = quotation_terms.split("\n")
     for term in terms_lines:
         pdf.multi_cell(0, 5, term)
-        pdf.ln(2)  # Add some space between terms
+        pdf.ln(2)
 
     pdf_output.write(pdf.output(dest='S').encode('latin1'))
 
@@ -467,36 +461,30 @@ def main():
     st.title("Quote Generator")
     st.caption("An Estimate & Quote Generator Powered by OpenAI.")
 
-    # Input fields for the project name and the company/client name
     project_name = st.text_input("Project", placeholder="e.g., Kitchee 1/F", key="project_name")
     sales_name = st.text_input("Quoter", placeholder="e.g., Alice Wong", key="sales_name")
 
-    # Input text area for entering quote details
     sample_text = st.text_area(
         "Enter Your Quote Details, Please Specifically Include Product No./Service & Quantity.",
         height=300
     )
 
-    # Define the modal (assuming Modal is a custom class you have defined elsewhere)
     modal = Modal(key="materials_modal", title="Additional Materials Reminder")
 
     if st.button("Generate Quote"):
         if sample_text:
-            # Split text into contexts and terms
             split_result = split_text_chain.invoke({"text": sample_text})
             quotation_context_text = split_result.split("Quotation Terms:")[0].replace("Quotation Contexts:", "").strip()
             quotation_terms_text = split_result.split("Quotation Terms:")[1].strip()
 
-            # Use ThreadPoolExecutor to run both chains in parallel
+            #run both chains in parallel
             with ThreadPoolExecutor() as executor:
                 context_future = executor.submit(process_quotation_context, quotation_context_text)
                 terms_future = executor.submit(process_quotation_terms, quotation_terms_text)
 
-                # Get the results from both futures
                 quotation_contexts_result = context_future.result()
                 quotation_terms_result = terms_future.result()
 
-            # Save results in session state
             st.session_state['quotation_items'] = quotation_contexts_result
             st.session_state['quotation_terms'] = quotation_terms_result
 
@@ -527,7 +515,6 @@ def main():
         if st.button("Generate PDF"):
             generate_pdf(quotation_items_editable, quotation_terms_editable, pdf_buffer, project_name, sales_name)
 
-            # Display the PDF preview
             st.subheader("PDF Preview")
             pdf_buffer.seek(0)  # Move to the start of the BytesIO buffer
             pdf_base64 = base64.b64encode(pdf_buffer.getvalue()).decode('utf-8')
@@ -537,7 +524,6 @@ def main():
                 unsafe_allow_html=True,
                 )
 
-            # Show the PDF preview in Streamlit using st.download_button and st.write
             st.download_button(
                 label="Download Quotation",
                 data=pdf_buffer.getvalue(),
