@@ -43,9 +43,9 @@ quotee_details = [
     },
     {
         "project": "TechHub Office",
-        "attn": "Alice Wong",
+        "attn": "Alice Hui",
         "phone_number": "852-56781234",
-        "email": "alice.wong@techhub.com",
+        "email": "alice.hui@techhub.com",
         "address": {
             "floor&unit": "10/F",
             "street": "45 Innovation Road",
@@ -112,10 +112,10 @@ sales_details = [
         "sales_company": "Virpluz Limited Ltd.",
     },
     {
-        "sales_attn": "Alice Wong",
+        "sales_attn": "Tara Hui",
         "sales_tel": "852-21234567",
         "sales_mp": "852-91234567",
-        "sales_email": "alice.wong@virpluz.io",
+        "sales_email": "tara.hui@virpluz.io",
         "sales_company": "Virpluz Limited Ltd.",
     },
     {
@@ -431,7 +431,7 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
 # Terms and conditions title
     pdf.set_font("Arial", style='B', size=16)
     if pdf.get_y() > 260:
-        pdf.set_xy(10, 95)
+        pdf.set_xy(10, 97)
 
     pdf.cell(0, 10, "Terms & Conditions", align='L', ln=True)
     pdf.ln(5)
@@ -470,7 +470,7 @@ def main():
     st.caption("An Estimate & Quote Generator Powered by OpenAI.")
 
     project_name = st.text_input("Project", placeholder="e.g., Kitchee 1/F", key="project_name")
-    sales_name = st.text_input("Quoter", placeholder="e.g., Alice Wong", key="sales_name")
+    sales_name = st.text_input("Quoter", placeholder="e.g., Tara Hui", key="sales_name")
 
     sample_text = st.text_area(
         "Enter Your Quote Details, Please Specifically Include Product No./Service & Quantity.",
