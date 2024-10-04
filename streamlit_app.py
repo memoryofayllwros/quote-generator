@@ -15,7 +15,6 @@ product_details = {
         'size': '0402 mm',
         'color': 'Black'
     },
-    
     'TMCDH0904': {
         'unit_price': 45.00,
         'size': '0904 mm',
@@ -103,6 +102,7 @@ quotee_details = [
     },
 ]
 
+
 sales_details = [
     {
         "sales_attn": "Jess Cheung",
@@ -141,40 +141,57 @@ sales_details = [
     }
 ]
 
+
+
+
+
+
+
 import os
-import streamlit as st
-from langchain_openai import OpenAI
-from pdf_format import generate_pdf
+from datetime import datetime
 from langchain.prompts import PromptTemplate
+from langchain_openai import OpenAI
+from langchain.output_parsers.regex import RegexParser
+import io
+import base64
+import streamlit as st
+from streamlit_modal import Modal
+from concurrent.futures import ThreadPoolExecutor
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-
 llm = OpenAI(model_name="gpt-3.5-turbo-instruct")
 
-# ----------splitting prompt for quotation contexts and terms----------
+# ----------splitting prompt for quotation contents and terms----------
 split_text_prompt = PromptTemplate(
     input_variables=["text"],
     template="""
-    Split the following text into two sections: 
-    1. Quotation Contexts (product and service details).
+    Split the following text into three sections: 
+    1. Quotation Contents (product and service details).
     2. Quotation Terms (financial, legal, and contractual information).
     
-    Provide the split sections clearly labeled as "Quotation Contexts:" and "Quotation Terms:".
+    Provide the split sections clearly labeled as "Quotation Contents", and "Quotation Terms".
 
     Text:
     {text}
     """
 )
 
-# ----------extracting quotation contexts and terms----------
-quotation_context_prompt = PromptTemplate(
+# ----------extracting quotation contents and terms----------
+content_output_parser = RegexParser(
+    regex=r"Description:\s*(?P<description>.*),\s*Product No.:\s*(?P<product_no>.*),\s*QTY.:\s*(?P<qty>\d+)",
+    output_keys=["description", "product_no", "qty"]
+)
+
+
+quotation_content_prompt = PromptTemplate(
     input_variables=["text"],
     template="""
-    You are an expert in identifying quotation contexts from documents. The quotation context includes product information, installation details, and services provided. Extract the quotation contexts from the following text: {text}
-
-    Then, for the extracted quotation texts, please follow these steps and ONLY display the final extracted information as outlined below.
+    You are an expert in identifying quotation contents from documents. 
+    The quotation content includes product information, installation details, and services provided. 
+    Extract the quotation contents from the following text: {text}
+    Then, for the extracted quotation texts, please follow these steps and ONLY display the final extracted information as outlined below, that is, Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)].
 
     1. Split texts into separate itemized quotes.
     Split the following string into separate itemized quotes based on distinct job descriptions.
@@ -186,11 +203,12 @@ quotation_context_prompt = PromptTemplate(
     - Ensure each entry is in the format: "Description: [simple description of this itemized quote in which area], Product No./Service: [product number|service name], QTY.: [quantity (digits)]."
     - If any piece of information (Description, Product No., QTY.) is missing, indicate it as "N/A".
  
-    3. The final output should exclusively contain the extracted information formatted as: 
-    "Description: [concise and short description of this itemized quote in which area], Product No.: [product number], QTY.: [quantity (digits)]".
-    - Do NOT include any additional text, explanations, or itemized quotes from Step 1.
+    **Reminder**: The final output should exclusively contain the extracted information formatted as: 
+    - Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)].
+    - Do NOT include any additional text, explanations, or itemized quotes except for "Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)]".
 
-    """
+    """,
+    output_parser=content_output_parser
 )
 
 quotation_terms_prompt = PromptTemplate(
@@ -211,19 +229,36 @@ quotation_terms_prompt = PromptTemplate(
     - [details]"
 
     For example:
-    "5. Delivery:
-    - Stock Item - 3-5 days from the date receiving your deposit and order confirmation, subject to stock unsold.
-    - Indent item - 10-12 weeks from the date receiving your deposit and order confirmation, subject to final confirmation by our supplier.
     "
+    5. Delivery:
+    Stock Item - 3-5 days from the date receiving your deposit and order confirmation, subject to stock unsold.
+    Indent item - 10-12 weeks from the date receiving your deposit and order confirmation, subject to final confirmation by our supplier.
+    "
+    
     Importantly, each sentence must be completed and accurate.
     """
 )
 
 split_text_chain = split_text_prompt | llm
-quotation_context_chain = quotation_context_prompt | llm
+quotation_content_chain = quotation_content_prompt | llm
 quotation_terms_chain = quotation_terms_prompt | llm
 
 
+
+
+#----------retrieve details from dict----------
+def get_quotee_details(project_name):
+    for quotee_info in quotee_details:
+        if quotee_info["project"] == project_name:
+            return quotee_info
+    return None
+
+
+def get_sales_details(sales_name):
+    for sales_info in sales_details:
+        if sales_info["sales_attn"] == sales_name:
+            return sales_info
+    return None
 
 # ----------generate PDF----------
 from fpdf import FPDF
@@ -251,20 +286,6 @@ def generate_ref_no():
 
 ref_no = generate_ref_no()
 
-
-#----------retrieve details from dict----------
-def get_quotee_details(project_name):
-    for details in quotee_details:
-        if details["project"] == project_name:
-            return details
-    return None
-
-def get_sales_details(sales_name):
-    for sales_info in sales_details:
-        if sales_info["sales_attn"] == sales_name:
-            return sales_info
-    return None
-
 class CustomPDF(FPDF):
     def __init__(self, project_name, sales_name):
         super().__init__()
@@ -272,21 +293,21 @@ class CustomPDF(FPDF):
         self.sales_name = sales_name
 
     def header(self):
-        details = get_quotee_details(self.project_name)
+        quotee_info = get_quotee_details(self.project_name)
         sales_info = get_sales_details(self.sales_name)
 
-        if details and sales_info:
-            address = details["address"]
-            attn = details["attn"]
-            phone = details["phone_number"]
-            email = details["email"]
+        if quotee_info and sales_info:
+            address = quotee_info["address"]
+            attn = quotee_info["attn"]
+            phone = quotee_info["phone_number"]
+            email = quotee_info["email"]
             floorunit = address["floor&unit"]
             street = address["street"]
             district = address["district"]
             region = address["region"]
 
             self.set_xy(158, 10)
-            self.image('virpluz_logo.jpg', h=15)
+            self.image('/Users/jingwang/env/create_quote/virpluz_logo.jpg', h=15)
 
             self.set_xy(10, 18)
             self.set_font("Arial", style='B', size=20)
@@ -351,10 +372,10 @@ class CustomPDF(FPDF):
         self.set_font("Arial", size=11)
         page_number = "Page " + str(self.page_no())
         self.cell(0, 10, f"{ref_no} | {page_number}", align='R')
-
+    
 
 # PDF generation function with integrated table and custom header & footer
-def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, sales_name):
+def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, sales_name):
     pdf = CustomPDF(project_name, sales_name)
     pdf.add_page()
 
@@ -377,7 +398,7 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
     grand_total = 0.0
 
     # Loop through each quote line and add to table with improved formatting
-    for i, line in enumerate(quotation_contexts.split('\n'), start=1):
+    for i, line in enumerate(quotation_contents.split('\n'), start=1):
         if not line.strip():
             continue
 
@@ -404,6 +425,7 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
         if not description or not product_service or qty == 0:
             continue
 
+    # Retrieve unit price from predefined dictionary, or skip if not foun
         product_info = product_details.get(product_service)
         if product_info is None:
             continue
@@ -413,6 +435,7 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
         grand_total += total_price
         total_price = "{:.2f}".format(qty * unit_price)
 
+        # Add each row to the PDF with right-aligned numeric columns
         pdf.set_x(5)
         pdf.cell(15, 10, str(i), 0, 0, 'C')
         pdf.cell(65, 10, description, 0, 0, 'L')
@@ -426,20 +449,20 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
     pdf.set_font("Arial", style='B', size=12)
     pdf.cell(170, 10, "Total Amount (HKD):", align='R')
     pdf.cell(21, 10, "{:.2f}".format(grand_total), align='R')
+
     pdf.ln(10)
 
 # Terms and conditions title
-    pdf.set_font("Arial", style='B', size=16)
-    if pdf.get_y() > 260:
-        pdf.set_xy(10, 97)
-
+    pdf.add_page()
+    pdf.set_font("Arial", size=14)
+    pdf.set_xy(10, 97)
     pdf.cell(0, 10, "Terms & Conditions", align='L', ln=True)
     pdf.ln(5)
 
-# Terms & Conditions Content
     pdf.set_font("Arial", size=12)
     terms_lines = quotation_terms.split("\n")
 
+# Add each term to the PDF
     for term in terms_lines:
         if pdf.get_y() > 260:
                 pdf.add_page()
@@ -448,18 +471,14 @@ def generate_pdf(quotation_contexts, quotation_terms, pdf_output, project_name, 
         pdf.multi_cell(0, 5, term)
         pdf.ln(2)
 
+#signature
+
     pdf_output.write(pdf.output(dest='S').encode('latin1'))
 
-# ----------Streamlit UI----------
-import io
-from io import BytesIO
-import base64
-import streamlit as st
-from streamlit_modal import Modal
-from concurrent.futures import ThreadPoolExecutor
 
-def process_quotation_context(quotation_context_text):
-    return quotation_context_chain.invoke({"text": quotation_context_text})
+# ----------Streamlit UI----------
+def process_quotation_content(quotation_content_text):
+    return quotation_content_chain.invoke({"text": quotation_content_text})
 
 def process_quotation_terms(quotation_terms_text):
     return quotation_terms_chain.invoke({"text": quotation_terms_text})
@@ -482,18 +501,18 @@ def main():
     if st.button("Generate Quote"):
         if sample_text:
             split_result = split_text_chain.invoke({"text": sample_text})
-            quotation_context_text = split_result.split("Quotation Terms:")[0].replace("Quotation Contexts:", "").strip()
+            quotation_content_text = split_result.split("Quotation Terms:")[0].replace("Quotation Contents:", "").strip()
             quotation_terms_text = split_result.split("Quotation Terms:")[1].strip()
 
-            #run both chains in parallel
+            # run both chains in parallel
             with ThreadPoolExecutor() as executor:
-                context_future = executor.submit(process_quotation_context, quotation_context_text)
+                content_future = executor.submit(process_quotation_content, quotation_content_text)
                 terms_future = executor.submit(process_quotation_terms, quotation_terms_text)
 
-                quotation_contexts_result = context_future.result()
+                quotation_contents_result = content_future.result()
                 quotation_terms_result = terms_future.result()
 
-            st.session_state['quotation_items'] = quotation_contexts_result
+            st.session_state['quotation_items'] = quotation_contents_result
             st.session_state['quotation_terms'] = quotation_terms_result
 
             with modal.container():
@@ -503,13 +522,13 @@ def main():
                 """)
                 if st.button("Yes, I need additional materials"):
                     st.write("Additional materials will be included in the quotation.")
-                elif st.button("No, Proceed"):
+                elif st.button("No, please proceed"):
                     st.write("Proceeding without additional materials.")
 
 
-    # Ensure contexts and terms are available for download and preview
+    # Ensure contents and terms are available for download and preview
     if 'quotation_items' in st.session_state and 'quotation_terms' in st.session_state:
-        st.subheader("Quotation Info Check")
+        st.subheader("Quotation Info Check:")
         st.write(f"This quotation is generated for {project_name} from {sales_name}.")
             
         if not project_name or not sales_name:
