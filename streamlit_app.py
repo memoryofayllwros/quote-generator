@@ -307,7 +307,7 @@ class CustomPDF(FPDF):
             district = address["district"]
             region = address["region"]
 
-            self.set_xy(158, 10)
+            self.set_xy(158, 12)
             self.image('virpluz_logo.jpg', h=15)
 
             self.set_xy(10, 18)
@@ -423,7 +423,7 @@ def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, 
     pdf.cell(190, 6, "", ln=True, align='L')
 
     pdf.set_xy(5, 104)
-    pdf.set_font("Arial", style='BU', size=12)
+    pdf.set_font("Arial", style='BU', size=11)
     pdf.cell(15, 7, "Item", align='C')
     pdf.cell(65, 7, "Description", align='L')
     pdf.cell(40, 7, "Product No.", align='L')
