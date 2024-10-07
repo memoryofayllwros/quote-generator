@@ -41,7 +41,7 @@ quotee_details = [
         }
     },
     {
-        "project": "TechHub Office",
+        "project": "TechHub Office 3/F",
         "attn": "Alice Hui",
         "phone_number": "852-56781234",
         "email": "alice.hui@techhub.com",
@@ -112,7 +112,7 @@ sales_details = [
         "sales_company": "Virpluz Limited Ltd.",
     },
     {
-        "sales_attn": "Tara Hui",
+        "sales_attn": "Tara Ho",
         "sales_tel": "852-21234567",
         "sales_mp": "852-91234567",
         "sales_email": "tara.hui@virpluz.io",
@@ -133,7 +133,7 @@ sales_details = [
         "sales_company": "Virpluz Limited Ltd.",
     },
     {
-        "sales_attn": "Kevin Ho",
+        "sales_attn": "Kevin Hui",
         "sales_tel": "852-23456789",
         "sales_mp": "852-92345678",
         "sales_email": "kevin.ho@virpluz.io",
@@ -206,7 +206,8 @@ quotation_content_prompt = PromptTemplate(
     - If any piece of information (Description, Product No., QTY.) is missing, indicate it as "N/A".
  
     **Reminder**: The final output should exclusively contain the extracted information formatted as: 
-    - Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)].
+    Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)].
+    
     - Do NOT include any additional text, explanations, or itemized quotes except for "Description: [concise description], Product No.: [product/service ID], QTY.: [quantity (digits)]".
 
     """,
@@ -244,7 +245,6 @@ quotation_terms_prompt = PromptTemplate(
 split_text_chain = split_text_prompt | llm
 quotation_content_chain = quotation_content_prompt | llm
 quotation_terms_chain = quotation_terms_prompt | llm
-
 
 
 #----------retrieve details from dict----------
@@ -369,7 +369,6 @@ class CustomPDF(FPDF):
             st.error("Project details not found.")
 
     def footer(self):
-        """Add a footer with page numbers and a reference number."""
         self.set_y(-15)
         self.set_font("Arial", size=11)
         current_page = self.page_no()
@@ -379,8 +378,6 @@ class CustomPDF(FPDF):
     def add_signature_section(self):
         quotee_info = get_quotee_details(self.project_name)
         sales_info = get_sales_details(self.sales_name)
-
-        """Adds a signature section at the end of the PDF."""
         signature_height = 60
 
         if self.get_y() + signature_height > 297 - 10:
@@ -395,7 +392,7 @@ class CustomPDF(FPDF):
         self.cell(80, 6, "", ln=0)  
         self.cell(30, 6, txt="Confirmed and Accepted By", ln=1, align='L')
 
-        self.set_font("Arial", style='B', size=11)
+        self.set_font("Arial", style='B', size=12)
         self.cell(30, 6, txt=sales_info["sales_company"], ln=0, align='L')
         self.cell(80, 6, "", ln=0)  
         self.cell(30, 6, txt="", ln=1, align='C')  
@@ -531,8 +528,8 @@ def main():
     st.title("Quote Generator")
     st.caption("An Estimate & Quote Generator Powered by OpenAI.")
 
-    project_name = st.text_input("Project", placeholder="e.g., Kitchee 1/F", key="project_name")
-    sales_name = st.text_input("Quoter", placeholder="e.g., Tara Hui", key="sales_name")
+    project_name = st.text_input("Project", placeholder="e.g., TechHub Office 3/F", key="project_name")
+    sales_name = st.text_input("Quoter", placeholder="e.g., Tara Ho", key="sales_name")
 
     sample_text = st.text_area(
         "Enter Your Quote Details, Please Specifically Include Product No./Service & Quantity.",
