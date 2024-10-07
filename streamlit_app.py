@@ -477,11 +477,7 @@ def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, 
         # Add each row to the PDF with right-aligned numeric columns
         pdf.set_x(5)
         pdf.cell(15, 10, str(i), 0, 0, 'C')
-
-        description_height = pdf.get_string_width(description) / 65
-        pdf.multi_cell(65, 10, description, 0, 'L')
-        pdf.set_xy(pdf.get_x() + 80, pdf.get_y() - description_height * 10)
-
+        pdf.cell(65, 10, description, 0, 0, 'L')
         pdf.cell(40, 10, product_service, 0, 0, 'L')
         pdf.cell(25, 10, str(unit_price), 0, 0, 'R')
         pdf.cell(25, 10, str(qty), 0, 0, 'C')
