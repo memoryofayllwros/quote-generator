@@ -427,7 +427,7 @@ def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, 
     pdf.cell(15, 7, "Item", align='C')
     pdf.cell(65, 7, "Description", align='L')
     pdf.cell(40, 7, "Product No.", align='L')
-    pdf.cell(25, 7, "Unit HKD", align='R')
+    pdf.cell(25, 7, "Unit Price", align='R')
     pdf.cell(25, 7, "QTY.", align='C')
     pdf.cell(25, 7, "Amount HKD", align='C')
     pdf.ln(10)
@@ -477,7 +477,11 @@ def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, 
         # Add each row to the PDF with right-aligned numeric columns
         pdf.set_x(5)
         pdf.cell(15, 10, str(i), 0, 0, 'C')
-        pdf.cell(65, 10, description, 0, 0, 'L')
+
+        description_height = pdf.get_string_width(description) / 65
+        pdf.multi_cell(65, 10, description, 0, 'L')
+        pdf.set_xy(pdf.get_x() + 80, pdf.get_y() - description_height * 10)
+
         pdf.cell(40, 10, product_service, 0, 0, 'L')
         pdf.cell(25, 10, str(unit_price), 0, 0, 'R')
         pdf.cell(25, 10, str(qty), 0, 0, 'C')
