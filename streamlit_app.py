@@ -308,7 +308,7 @@ class CustomPDF(FPDF):
             region = address["region"]
 
             self.set_xy(158, 10)
-            self.image('/Users/jingwang/env/create_quote/virpluz_logo.jpg', h=15)
+            self.image('virpluz_logo.jpg', h=15)
 
             self.set_xy(10, 18)
             self.set_font("Arial", style='B', size=20)
@@ -379,8 +379,15 @@ class CustomPDF(FPDF):
     def add_signature_section(self):
         quotee_info = get_quotee_details(self.project_name)
         sales_info = get_sales_details(self.sales_name)
+
         """Adds a signature section at the end of the PDF."""
-        self.ln(20) 
+        signature_height = 65
+
+        if self.get_y() + signature_height > 297 - 15:
+            self.add_page()
+            self.set_xy(10, 97)
+ 
+        self.ln(10) 
         self.set_xy(10, -65)
         self.set_font("Arial", size=12)
 
