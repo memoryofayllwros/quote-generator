@@ -152,11 +152,13 @@ from datetime import datetime
 from langchain.prompts import PromptTemplate
 from langchain_openai import OpenAI
 from langchain.output_parsers.regex import RegexParser
+
 import io
 import base64
 import streamlit as st
 from streamlit_modal import Modal
 from concurrent.futures import ThreadPoolExecutor
+
 
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -242,7 +244,6 @@ quotation_terms_prompt = PromptTemplate(
 split_text_chain = split_text_prompt | llm
 quotation_content_chain = quotation_content_prompt | llm
 quotation_terms_chain = quotation_terms_prompt | llm
-
 
 
 
@@ -368,11 +369,46 @@ class CustomPDF(FPDF):
             st.error("Project details not found.")
 
     def footer(self):
+        """Add a footer with page numbers and a reference number."""
         self.set_y(-15)
         self.set_font("Arial", size=11)
-        page_number = "Page " + str(self.page_no())
-        self.cell(0, 10, f"{ref_no} | {page_number}", align='R')
-    
+        current_page = self.page_no()
+        footer_text = f"{ref_no} | Page {current_page}"
+        self.cell(0, 10, footer_text, align = "R")
+
+    def add_signature_section(self):
+        quotee_info = get_quotee_details(self.project_name)
+        sales_info = get_sales_details(self.sales_name)
+        """Adds a signature section at the end of the PDF."""
+        self.ln(20) 
+        self.set_xy(10, -65)
+        self.set_font("Arial", size=12)
+
+        # Quoter's signature
+        self.cell(30, 6, txt="For and on behalf of", ln=0, align='L')
+        self.cell(80, 6, "", ln=0)  
+        self.cell(30, 6, txt="Confirmed and Accepted By", ln=1, align='L')
+
+        self.set_font("Arial", style='B', size=11)
+        self.cell(30, 6, txt=sales_info["sales_company"], ln=0, align='L')
+        self.cell(80, 6, "", ln=0)  
+        self.cell(30, 6, txt="", ln=1, align='C')  
+
+        self.set_font("Arial", size=12)
+        self.cell(80, 10, "_______________________", ln=0, align='L')
+        self.cell(30, 10, "", ln=0)
+        self.cell(80, 10, "_______________________", ln=1, align='L')
+
+        self.set_font("Arial", style='B', size=12)
+        self.cell(80, 6, txt=sales_info["sales_attn"], ln=0, align='L')
+        self.cell(30, 6, "", ln=0)
+        self.cell(80, 6, "Customer's Signature", ln=1, align='L')
+
+        # Additional lines for dates or company stamps
+        self.cell(30, 6, "Sales Manager", ln=0, align='L')
+        self.cell(80, 6, "", ln=0)
+        self.cell(30, 6, "Date: ", ln=1, align='L')
+
 
 # PDF generation function with integrated table and custom header & footer
 def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, sales_name):
@@ -462,21 +498,22 @@ def generate_pdf(quotation_contents, quotation_terms, pdf_output, project_name, 
     pdf.set_font("Arial", size=12)
     terms_lines = quotation_terms.split("\n")
 
-# Add each term to the PDF
+    # Add each term to the PDF
     for term in terms_lines:
         if pdf.get_y() > 260:
-                pdf.add_page()
-                pdf.set_xy(10, 97)
+            pdf.add_page()
+            pdf.set_xy(10, 97)
 
         pdf.multi_cell(0, 5, term)
-        pdf.ln(2)
 
-#signature
+    pdf.ln(20)
+    pdf.add_signature_section()
 
     pdf_output.write(pdf.output(dest='S').encode('latin1'))
 
 
 # ----------Streamlit UI----------
+
 def process_quotation_content(quotation_content_text):
     return quotation_content_chain.invoke({"text": quotation_content_text})
 
@@ -560,3 +597,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
