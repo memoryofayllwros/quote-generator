@@ -381,14 +381,13 @@ class CustomPDF(FPDF):
         sales_info = get_sales_details(self.sales_name)
 
         """Adds a signature section at the end of the PDF."""
-        signature_height = 65
+        signature_height = 60
 
-        if self.get_y() + signature_height > 297 - 15:
+        if self.get_y() + signature_height > 297 - 10:
             self.add_page()
-            self.set_xy(10, 97)
  
         self.ln(10) 
-        self.set_xy(10, -65)
+        self.set_xy(10, -60)
         self.set_font("Arial", size=12)
 
         # Quoter's signature
